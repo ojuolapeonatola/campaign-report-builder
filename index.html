@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campaign Report Builder</title>
+  <meta name="description" content="Turn post-level social media metrics into a stakeholder-ready campaign performance report.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- ===== HERO ===== -->
+  <header class="hero">
+    <div class="wrap hero__inner">
+      <div class="hero__copy">
+        <p class="eyebrow">Marketing ops tool</p>
+        <h1>Turn post insights into a <span class="hl">campaign story</span>.</h1>
+        <p class="lede">Drop in your post-level metrics. In seconds you get KPIs, a format face-off, a reach-vs-engagement map, your top posts, and a recap you can send to stakeholders.</p>
+        <div class="hero__actions">
+          <button type="button" class="btn btn--light" id="btnExample">See it with a real campaign</button>
+          <a class="btn btn--outline-light" href="#step1">Use my own data</a>
+        </div>
+      </div>
+      <div class="hero__art" aria-hidden="true">
+        <div class="float float--a"><span class="float__num">126K</span><span class="float__lbl">views</span></div>
+        <div class="float float--b"><span class="float__num">1.9×</span><span class="float__lbl">Reel reach</span></div>
+        <div class="float float--c"><span class="float__num">18.2%</span><span class="float__lbl">top engagement</span></div>
+        <div class="mini-bars"><i style="--h:40%"></i><i style="--h:65%"></i><i style="--h:50%"></i><i style="--h:90%"></i><i style="--h:72%"></i><i style="--h:100%"></i></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== STEP NAV ===== -->
+  <nav class="stepnav" aria-label="Steps">
+    <div class="wrap stepnav__inner">
+      <a href="#step1" class="stepnav__item is-active" data-step="step1"><span>1</span> Add data</a>
+      <a href="#report" class="stepnav__item is-locked" data-step="report"><span>2</span> See the story</a>
+      <a href="#share" class="stepnav__item is-locked" data-step="share"><span>3</span> Share it</a>
+      <button type="button" class="stepnav__clear" id="btnClear">Clear data</button>
+    </div>
+  </nav>
+
+  <main id="main" class="wrap">
+
+    <!-- ===== STEP 1: DATA ===== -->
+    <section class="card" id="step1" aria-labelledby="step1-title">
+      <div class="card__head">
+        <span class="step">1</span>
+        <div>
+          <h2 id="step1-title">Add your post data</h2>
+          <p class="card__sub">Upload a CSV, paste one, or add posts one at a time.</p>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Ways to add data">
+        <button role="tab" id="tab-upload" aria-controls="panel-upload" aria-selected="true">Upload CSV</button>
+        <button role="tab" id="tab-paste" aria-controls="panel-paste" aria-selected="false" tabindex="-1">Paste CSV</button>
+        <button role="tab" id="tab-form" aria-controls="panel-form" aria-selected="false" tabindex="-1">Add one post</button>
+      </div>
+
+      <div role="tabpanel" id="panel-upload" aria-labelledby="tab-upload" class="panel">
+        <label class="drop" for="fileInput">
+          <input type="file" id="fileInput" accept=".csv,text/csv">
+          <svg class="drop__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <strong>Drop a CSV here</strong> or click to choose a file
+          <span class="hint">Columns: post, platform, format, date, views, reach, likes, comments, shares, saves, reposts, collaborators. <a href="sample-data.csv" download>Download the template</a></span>
+        </label>
+      </div>
+
+      <div role="tabpanel" id="panel-paste" aria-labelledby="tab-paste" class="panel" hidden>
+        <label for="pasteInput" class="label">Paste CSV text (first row = column names)</label>
+        <textarea id="pasteInput" rows="6" spellcheck="false" placeholder="post,platform,format,date,views,reach,likes,comments,shares,saves,reposts"></textarea>
+        <button type="button" class="btn" id="btnPaste">Add pasted rows</button>
+      </div>
+
+      <div role="tabpanel" id="panel-form" aria-labelledby="tab-form" class="panel" hidden>
+        <form id="rowForm" class="form-grid">
+          <label>Post name<input name="post" required placeholder="e.g. Save-the-date graphic"></label>
+          <label>Platform<input name="platform" required placeholder="Instagram"></label>
+          <label>Format<input name="format" required placeholder="Reel, Post, Story…"></label>
+          <label>Date<input name="date" type="date"></label>
+          <label>Views<input name="views" type="number" min="0" inputmode="numeric"></label>
+          <label>Reach<input name="reach" type="number" min="0" inputmode="numeric" required></label>
+          <label>Likes<input name="likes" type="number" min="0" inputmode="numeric"></label>
+          <label>Comments<input name="comments" type="number" min="0" inputmode="numeric"></label>
+          <label>Shares<input name="shares" type="number" min="0" inputmode="numeric"></label>
+          <label>Saves<input name="saves" type="number" min="0" inputmode="numeric"></label>
+          <label>Reposts<input name="reposts" type="number" min="0" inputmode="numeric"></label>
+          <div class="form-grid__submit"><button type="submit" class="btn">Add post</button></div>
+        </form>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+
+      <div class="empty" id="emptyState">
+        <p><strong>No posts yet.</strong> Want to see what the report looks like first?</p>
+        <button type="button" class="btn btn--ghost" id="btnExample2">Load the example campaign</button>
+      </div>
+
+      <details class="table-details" id="tableWrap" hidden>
+        <summary><span id="tableCount">0 posts</span> in this report · view or remove</summary>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Posts in this report</caption>
+            <thead>
+              <tr>
+                <th scope="col">Post</th><th scope="col">Format</th>
+                <th scope="col" class="num">Reach</th><th scope="col" class="num">Views</th>
+                <th scope="col" class="num">Interactions</th><th scope="col" class="num">Eng. rate</th>
+                <th scope="col"><span class="sr-only">Remove</span></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== STEP 2: REPORT ===== -->
+    <section id="report" aria-labelledby="report-title" hidden>
+      <div class="story">
+        <p class="eyebrow eyebrow--dark">The headline</p>
+        <h2 id="report-title" class="story__headline"></h2>
+        <p class="story__sub" id="storySub"></p>
+      </div>
+
+      <div class="kpis" id="kpis"></div>
+      <p class="hint kpi-note">Engagement rate = (likes + comments + shares + saves + reposts) ÷ accounts reached. Total reach counts people who saw several posts more than once.</p>
+
+      <div class="card">
+        <div class="card__head card__head--tight">
+          <div>
+            <p class="eyebrow eyebrow--dark">Format face-off</p>
+            <h3 class="h3">Which format got in front of more people?</h3>
+          </div>
+        </div>
+        <div class="faceoff" id="faceoff"></div>
+      </div>
+
+      <div class="card">
+        <div class="card__head card__head--tight">
+          <div>
+            <p class="eyebrow eyebrow--dark">Reach vs. engagement map</p>
+            <h3 class="h3">Every post, at a glance</h3>
+            <p class="card__sub">Further right = reached more accounts. Higher = stronger reaction from the people reached. Hover or tab to a dot for details.</p>
+          </div>
+        </div>
+        <div class="scatter" id="scatter"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+
+      <div class="card">
+        <div class="card__head card__head--tight">
+          <div>
+            <p class="eyebrow eyebrow--dark">Leaderboard</p>
+            <h3 class="h3">Top posts</h3>
+          </div>
+          <label class="inline-select">Rank by
+            <select id="rankBy">
+              <option value="reach">Reach</option>
+              <option value="views">Views</option>
+              <option value="engagementRate">Engagement rate</option>
+              <option value="shareRate">Share rate</option>
+              <option value="interactions">Total interactions</option>
+            </select>
+          </label>
+        </div>
+        <ol class="leaders" id="ranking"></ol>
+      </div>
+
+      <div class="card">
+        <div class="card__head card__head--tight">
+          <div>
+            <p class="eyebrow eyebrow--dark">Breakdown</p>
+            <h3 class="h3">Average reach per post</h3>
+          </div>
+        </div>
+        <div class="grid2">
+          <div><p class="mini-title">By format</p><div class="bars" id="barsFormat"></div></div>
+          <div><p class="mini-title">By platform</p><div class="bars" id="barsPlatform"></div></div>
+          <div>
+            <p class="mini-title">By number of collaborators</p>
+            <div class="bars" id="barsCollab"></div>
+            <p class="hint">Posts without a collaborator count are left out.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="insights-wrap">
+        <p class="eyebrow eyebrow--dark">What the data says</p>
+        <ul class="insights" id="insights"></ul>
+      </div>
+    </section>
+
+    <!-- ===== STEP 3: SHARE ===== -->
+    <section class="card memo" id="share" aria-labelledby="share-title" hidden>
+      <div class="card__head">
+        <span class="step">3</span>
+        <div>
+          <h2 id="share-title">Share it</h2>
+          <p class="card__sub">Edit the recap, add your recommendation, and send it.</p>
+        </div>
+      </div>
+      <label for="summaryText" class="label">Stakeholder summary (editable)</label>
+      <textarea id="summaryText" rows="12"></textarea>
+      <div class="actions">
+        <button type="button" class="btn" id="btnCopySummary">Copy summary</button>
+        <button type="button" class="btn btn--ghost" id="btnCopyPrompt">Copy AI prompt (Claude / Gemini)</button>
+        <button type="button" class="btn btn--ghost" id="btnDownload">Download metrics CSV</button>
+        <button type="button" class="btn btn--ghost" id="btnPrint">Print / save as PDF</button>
+      </div>
+      <p class="hint">The AI prompt packages your metrics with instructions so an assistant can draft a narrative recap. Review anything it writes before sending.</p>
+    </section>
+
+  </main>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+  <footer class="wrap foot">
+    Built by Ojuolape Onatola with AI-assisted development (Claude). Runs entirely in your browser; your data never leaves this page.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
