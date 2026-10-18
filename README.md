@@ -1,6 +1,6 @@
 # Campaign Report Builder
 
-**Live demo:** https://ojuolape-onatola.github.io/campaign-report-builder/
+**Live demo:** https://ojuolapeonatola.github.io/campaign-report-builder/
 
 A browser tool that turns post-level social media metrics into a stakeholder-ready campaign report.
 
@@ -49,4 +49,4 @@ Everything runs in the browser: no server, no login, no API keys, and data never
 
 Plain HTML, CSS, and JavaScript with no libraries. All logic lives in `app.js` in numbered sections: configuration, CSV parsing, metrics, insights, and rendering. Supporting a new export format or changing a metric means editing one clearly labeled section.
 
-**Next ideas:** a date filter, campaign-over-campaign comparison, and connecting to a team's data system through an API.ojuolape-onatola.github.io/campaign-report-builder/`.
+**Next ideas:** a date filter, campaign-over-campaign comparison, and connecting to a team's data system through an API.ojuolapeonatola.github.io/campaign-report-builder/`.
