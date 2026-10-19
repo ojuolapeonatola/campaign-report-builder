@@ -58,12 +58,11 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ---------- 2. State ---------- */
-  // mode = what the visitor chose on the landing screen:
-  //   "landing" (nothing chosen yet) · "example" (built-in campaign) · "own" (their own data)
+  // mode = which data is on screen: "own" (the visitor's posts, the default) or "example" (built-in campaign).
   // The example and the visitor's data are kept in separate lists so they never mix.
-  let mode = "landing";
+  let mode = "own";
   let ownRows = load();   // the visitor's own posts (remembered in this browser)
-  let rows = [];          // whichever list is currently on screen
+  let rows = ownRows;     // whichever list is currently on screen
   let formatColor = {};
 
   /* ---------- 3. Helpers ---------- */
@@ -232,17 +231,12 @@
   }
 
   /* ---------- 7. Rendering ---------- */
-  // Shows or hides each part of the page based on the visitor's choice (mode) and whether there's data.
+  // Shows or hides each part of the page based on which data is on screen (mode) and whether there's any.
   function applyModeVisibility(has) {
-    const landing = mode === "landing";
-    document.body.dataset.mode = mode;
-    $("stepnav").hidden = landing;
-    $("step1").hidden = mode !== "own";
-    $("report").hidden = landing || !has;
-    $("share").hidden = landing || !has;
+    $("report").hidden = !has;
+    $("share").hidden = !has;
     $("modeBanner").hidden = mode !== "example";
     $("btnClear").hidden = !(mode === "own" && has);
-    document.querySelector('.stepnav__item[data-step="step1"]').hidden = mode !== "own";
     document.querySelectorAll('.stepnav__item:not([data-step="step1"])').forEach((a) => a.classList.toggle("is-locked", !has));
   }
 
@@ -493,32 +487,27 @@ ${toCSV(list)}`;
 
   /* ---------- 9. Events ---------- */
   function addRows(newRows, source) {
+    if (mode === "example") enterMode("own", { quiet: true }); // new posts never get mixed into the example
     rows = rows.concat(newRows); save(); render(true);
     setStatus(`Added ${newRows.length} post${newRows.length === 1 ? "" : "s"} from ${source}. Scroll down for your report.`, "ok");
   }
   function handleCSVText(text, source) {
     try { addRows(rowsFromCSV(text), source); } catch (e) { setStatus(e.message, "error"); }
   }
-  // Switches between the landing screen, the example campaign, and the visitor's own data.
+  // Switches between the example campaign and the visitor's own data.
   function enterMode(next, { quiet = false } = {}) {
     mode = next;
-    rows = next === "example" ? EXAMPLE.map((r) => ({ ...r })) : next === "own" ? ownRows : [];
+    rows = next === "example" ? EXAMPLE.map((r) => ({ ...r })) : ownRows;
     $("summaryText").value = "";          // a typed recommendation belongs to one dataset, not both
     setStatus(""); setStatus("", "", "shareStatus");
-    render(next !== "landing");
+    render(true);
     if (quiet) return;
     const behavior = reduceMotion ? "auto" : "smooth";
-    if (next === "landing") {
-      window.scrollTo({ top: 0, behavior });
-      $("btnExample").focus({ preventScroll: true });
-      return;
-    }
-    // Example → start at the analysis. Own data → start at the data form.
+    // Example → jump to the analysis. Own data → back to the data form.
     const heading = next === "example" ? $("report-title") : $("step1-title");
     heading.closest("section").scrollIntoView({ behavior, block: "start" });
     heading.focus({ preventScroll: true });
   }
-  function loadExample() { enterMode("example"); }
 
   $("fileInput").addEventListener("change", (e) => {
     const f = e.target.files[0]; if (!f) return;
@@ -549,15 +538,12 @@ ${toCSV(list)}`;
     save(); render(false); setStatus(`Removed "${removed.post}".`, "ok");
   });
 
-  $("btnExample").addEventListener("click", loadExample);
-  $("btnExample2").addEventListener("click", loadExample);
-  $("btnOwn").addEventListener("click", () => enterMode("own"));
+  $("btnExample2").addEventListener("click", () => enterMode("example"));
   $("btnOwnFromExample").addEventListener("click", () => enterMode("own"));
-  $("btnBack").addEventListener("click", () => enterMode("landing"));
-  // Clear data removes the visitor's own posts and returns to the landing screen.
+  // Clear data removes the visitor's own posts and returns to the empty data form.
   $("btnClear").addEventListener("click", () => {
     if (mode !== "own" || !rows.length) return; if (!confirm("Remove all your posts from this report?")) return;
-    rows = []; save(); enterMode("landing");
+    rows = []; save(); enterMode("own");
   });
   $("rankBy").addEventListener("change", () => { renderLeaders(rows.map(withMetrics)); observeReveals(); });
   $("btnCopySummary").addEventListener("click", () => copy($("summaryText").value, "Summary copied."));
@@ -600,6 +586,6 @@ ${toCSV(list)}`;
     });
   });
 
-  // Every visit (including a refresh) starts on the landing screen with the two choices.
-  enterMode("landing", { quiet: true });
+  // Every visit (including a refresh) opens at the top of one continuous page, with any saved posts restored.
+  render(false);
 })();

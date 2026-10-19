@@ -47,7 +47,6 @@ a { color: var(--accent-ink); }
 h1 { margin: 0 0 14px; font-size: clamp(32px, 5vw, 50px); line-height: 1.08; letter-spacing: -.02em; font-weight: 800; }
 .hl { background: linear-gradient(transparent 62%, rgba(232, 87, 63, .55) 62%); padding: 0 2px; }
 .lede { margin: 0 0 26px; max-width: 560px; color: #c9d2e3; font-size: 17px; }
-.hero__actions { display: flex; gap: 12px; flex-wrap: wrap; }
 .hero__art { position: relative; height: 260px; }
 .mini-bars { position: absolute; left: 10%; right: 10%; bottom: 0; height: 170px; display: flex; align-items: flex-end; gap: 10px; }
 .mini-bars i { flex: 1; height: var(--h); border-radius: 10px 10px 4px 4px; background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.06)); animation: grow 1.2s cubic-bezier(.2,.8,.2,1) both; }
@@ -67,9 +66,6 @@ h1 { margin: 0 0 14px; font-size: clamp(32px, 5vw, 50px); line-height: 1.08; let
 .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -10px var(--accent); }
 .btn--ghost { background: transparent; color: var(--accent-ink); }
 .btn--ghost:hover { background: var(--accent-soft); box-shadow: none; }
-.btn--light { background: #fff; border-color: #fff; color: var(--navy); }
-.btn--outline-light { background: transparent; border-color: rgba(255,255,255,.55); color: #fff; }
-.btn--outline-light:hover { background: rgba(255,255,255,.1); box-shadow: none; }
 
 /* ===== Step nav ===== */
 .stepnav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); margin-bottom: 28px; }
@@ -79,12 +75,10 @@ h1 { margin: 0 0 14px; font-size: clamp(32px, 5vw, 50px); line-height: 1.08; let
 .stepnav__item.is-active { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
 .stepnav__item.is-active span { background: var(--accent); color: #fff; }
 .stepnav__item.is-locked { opacity: .45; pointer-events: none; }
-.stepnav__back, .stepnav__clear { background: none; border: 0; color: var(--muted); font: 600 13px var(--font); cursor: pointer; padding: 8px 10px; border-radius: 8px; min-height: 40px; white-space: nowrap; }
-.stepnav__back { margin-left: auto; }
-.stepnav__back:hover, .stepnav__clear:hover { color: var(--accent-ink); background: var(--accent-soft); }
+.stepnav__clear { margin-left: auto; background: none; border: 0; color: var(--muted); font: 600 13px var(--font); cursor: pointer; padding: 8px 10px; border-radius: 8px; min-height: 40px; white-space: nowrap; }
+.stepnav__clear:hover { color: var(--accent-ink); background: var(--accent-soft); }
 
-/* ===== Landing + example-campaign banner ===== */
-body[data-mode="landing"] .foot { padding-top: 22px; }
+/* ===== Example-campaign banner ===== */
 .mode-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; margin-bottom: 18px; padding: 14px 18px; border-radius: 14px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); }
 .mode-banner p { margin: 0; font-size: 15px; }
 #report-title:focus, #step1-title:focus { outline: none; }
