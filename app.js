@@ -52,11 +52,18 @@
   const SMALL_SAMPLE = 3;          // groups smaller than this get a "directional only" caveat
   const SIMILAR_ENGAGEMENT = 0.02; // engagement gaps under 2 points are called "similar"
   const SERIES = ["var(--s1)", "var(--s2)", "var(--s3)", "var(--s4)", "var(--s5)"];
-  const STORAGE_KEY = "campaign-report-builder:v1";
+  // Only the visitor's own data is saved here. (v2: older versions also saved the example
+  // campaign under "v1", which would mix it into "my data", so that key is ignored.)
+  const STORAGE_KEY = "campaign-report-builder:own-data-v2";
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ---------- 2. State ---------- */
-  let rows = load();
+  // mode = what the visitor chose on the landing screen:
+  //   "landing" (nothing chosen yet) · "example" (built-in campaign) · "own" (their own data)
+  // The example and the visitor's data are kept in separate lists so they never mix.
+  let mode = "landing";
+  let ownRows = load();   // the visitor's own posts (remembered in this browser)
+  let rows = [];          // whichever list is currently on screen
   let formatColor = {};
 
   /* ---------- 3. Helpers ---------- */
@@ -72,10 +79,13 @@
     try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
   }
   function save() {
+    if (mode !== "own") return; // the example campaign is never saved as the visitor's data
+    ownRows = rows;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rows)); } catch (e) { /* storage unavailable: data stays in memory */ }
   }
-  function setStatus(msg, kind) {
-    const el = $("status"); el.textContent = msg; el.className = "status" + (kind ? " is-" + kind : "");
+  // Messages appear next to the data form ("status") or the share buttons ("shareStatus").
+  function setStatus(msg, kind, id = "status") {
+    const el = $(id); el.textContent = msg; el.className = "status" + (kind ? " is-" + kind : "");
   }
 
   /* ---------- 4. CSV parsing ---------- */
@@ -130,7 +140,7 @@
       r.post = r.post || "Post " + (rows.length + n + 1);
       r.platform = r.platform || "Unspecified";
       r.format = r.format || "Unspecified";
-      // Blank collaborator count = unknown (null), so it isn't mistaken for 0.
+            // Blank collaborator count = unknown (null), so it isn't mistaken for 0.
       r.collaborators = r.collaborators === "" ? null : toNumber(r.collaborators);
       return r;
     });
@@ -161,7 +171,6 @@
       }))
       .sort((a, b) => b.avgReach - a.avgReach);
   }
-
   // Average reach by number of collaborating accounts, in buckets 1, 2 and 3+.
   // Posts with an unknown (or zero) collaborator count are left out.
   const COLLAB_BUCKETS = ["1 collaborator", "2 collaborators", "3+ collaborators"];
@@ -172,7 +181,6 @@
     return groupAverage(known, "collabBucket")
       .sort((a, b) => COLLAB_BUCKETS.indexOf(a.name) - COLLAB_BUCKETS.indexOf(b.name));
   }
-
   function summarize(list) {
     const sum = (k) => list.reduce((s, r) => s + (r[k] || 0), 0);
     const totals = { posts: list.length, views: sum("views"), reach: sum("reach"), interactions: sum("interactions"), shares: sum("shares") };
@@ -224,14 +232,26 @@
   }
 
   /* ---------- 7. Rendering ---------- */
+  // Shows or hides each part of the page based on the visitor's choice (mode) and whether there's data.
+  function applyModeVisibility(has) {
+    const landing = mode === "landing";
+    document.body.dataset.mode = mode;
+    $("stepnav").hidden = landing;
+    $("step1").hidden = mode !== "own";
+    $("report").hidden = landing || !has;
+    $("share").hidden = landing || !has;
+    $("modeBanner").hidden = mode !== "example";
+    $("btnClear").hidden = !(mode === "own" && has);
+    document.querySelector('.stepnav__item[data-step="step1"]').hidden = mode !== "own";
+    document.querySelectorAll('.stepnav__item:not([data-step="step1"])').forEach((a) => a.classList.toggle("is-locked", !has));
+  }
+
   function render(animate) {
     const list = rows.map(withMetrics);
     const has = list.length > 0;
+    applyModeVisibility(has);
     $("tableWrap").hidden = !has;
     $("emptyState").hidden = has;
-    $("report").hidden = !has;
-    $("share").hidden = !has;
-    document.querySelectorAll('.stepnav__item:not([data-step="step1"])').forEach((a) => a.classList.toggle("is-locked", !has));
     $("tableCount").textContent = `${list.length} post${list.length === 1 ? "" : "s"}`;
 
     $("tableBody").innerHTML = list.map((r, i) => `
@@ -266,7 +286,6 @@
     $("insights").innerHTML = insights.map((x) => `
       <li class="insight"><span class="insight__icon"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[x.icon]}</svg></span>
       <p>${esc(x.text)}${x.caveat ? `<span class="caveat">${esc(x.caveat)}</span>` : ""}</p></li>`).join("");
-
     const key = $("rankBy").value;
     const ranked = [...list].sort((a, b) => (b[key] || 0) - (a[key] || 0));
     const keepRec = currentRecommendation();
@@ -443,8 +462,8 @@ ${toCSV(list)}`;
   }
 
   async function copy(text, okMsg) {
-    try { await navigator.clipboard.writeText(text); setStatus(okMsg, "ok"); }
-    catch (e) { setStatus("Copy didn't work in this browser. Select the text and copy it manually.", "error"); }
+    try { await navigator.clipboard.writeText(text); setStatus(okMsg, "ok", "shareStatus"); }
+    catch (e) { setStatus("Copy didn't work in this browser. Select the text and copy it manually.", "error", "shareStatus"); }
   }
 
   /* ---------- 8. Scroll effects (reveal + active step) ---------- */
@@ -480,11 +499,26 @@ ${toCSV(list)}`;
   function handleCSVText(text, source) {
     try { addRows(rowsFromCSV(text), source); } catch (e) { setStatus(e.message, "error"); }
   }
-  function loadExample() {
-    rows = EXAMPLE.map((r) => ({ ...r })); save(); render(true);
-    setStatus("Loaded example: International Week 2026 Instagram posts.", "ok");
-    $("report").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+  // Switches between the landing screen, the example campaign, and the visitor's own data.
+  function enterMode(next, { quiet = false } = {}) {
+    mode = next;
+    rows = next === "example" ? EXAMPLE.map((r) => ({ ...r })) : next === "own" ? ownRows : [];
+    $("summaryText").value = "";          // a typed recommendation belongs to one dataset, not both
+    setStatus(""); setStatus("", "", "shareStatus");
+    render(next !== "landing");
+    if (quiet) return;
+    const behavior = reduceMotion ? "auto" : "smooth";
+    if (next === "landing") {
+      window.scrollTo({ top: 0, behavior });
+      $("btnExample").focus({ preventScroll: true });
+      return;
+    }
+    // Example → start at the analysis. Own data → start at the data form.
+    const heading = next === "example" ? $("report-title") : $("step1-title");
+    heading.closest("section").scrollIntoView({ behavior, block: "start" });
+    heading.focus({ preventScroll: true });
   }
+  function loadExample() { enterMode("example"); }
 
   $("fileInput").addEventListener("change", (e) => {
     const f = e.target.files[0]; if (!f) return;
@@ -517,9 +551,13 @@ ${toCSV(list)}`;
 
   $("btnExample").addEventListener("click", loadExample);
   $("btnExample2").addEventListener("click", loadExample);
+  $("btnOwn").addEventListener("click", () => enterMode("own"));
+  $("btnOwnFromExample").addEventListener("click", () => enterMode("own"));
+  $("btnBack").addEventListener("click", () => enterMode("landing"));
+  // Clear data removes the visitor's own posts and returns to the landing screen.
   $("btnClear").addEventListener("click", () => {
-    if (!rows.length) return; if (!confirm("Remove all posts from this report?")) return;
-    rows = []; save(); render(false); setStatus("Cleared all data.", "ok");
+    if (mode !== "own" || !rows.length) return; if (!confirm("Remove all your posts from this report?")) return;
+    rows = []; save(); enterMode("landing");
   });
   $("rankBy").addEventListener("change", () => { renderLeaders(rows.map(withMetrics)); observeReveals(); });
   $("btnCopySummary").addEventListener("click", () => copy($("summaryText").value, "Summary copied."));
@@ -562,5 +600,6 @@ ${toCSV(list)}`;
     });
   });
 
-  render(true);
+  // Every visit (including a refresh) starts on the landing screen with the two choices.
+  enterMode("landing", { quiet: true });
 })();

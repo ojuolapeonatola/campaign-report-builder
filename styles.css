@@ -28,6 +28,8 @@
 }
 
 * { box-sizing: border-box; }
+/* Anything marked hidden is fully removed from the layout (no empty gaps), even if a class sets display. */
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; scroll-padding-top: 70px; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
@@ -77,8 +79,15 @@ h1 { margin: 0 0 14px; font-size: clamp(32px, 5vw, 50px); line-height: 1.08; let
 .stepnav__item.is-active { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
 .stepnav__item.is-active span { background: var(--accent); color: #fff; }
 .stepnav__item.is-locked { opacity: .45; pointer-events: none; }
-.stepnav__clear { margin-left: auto; background: none; border: 0; color: var(--muted); font: 600 13px var(--font); cursor: pointer; padding: 8px 10px; border-radius: 8px; min-height: 40px; }
-.stepnav__clear:hover { color: var(--accent-ink); background: var(--accent-soft); }
+.stepnav__back, .stepnav__clear { background: none; border: 0; color: var(--muted); font: 600 13px var(--font); cursor: pointer; padding: 8px 10px; border-radius: 8px; min-height: 40px; white-space: nowrap; }
+.stepnav__back { margin-left: auto; }
+.stepnav__back:hover, .stepnav__clear:hover { color: var(--accent-ink); background: var(--accent-soft); }
+
+/* ===== Landing + example-campaign banner ===== */
+body[data-mode="landing"] .foot { padding-top: 22px; }
+.mode-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; margin-bottom: 18px; padding: 14px 18px; border-radius: 14px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.mode-banner p { margin: 0; font-size: 15px; }
+#report-title:focus, #step1-title:focus { outline: none; }
 
 /* ===== Cards ===== */
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin-bottom: 22px; box-shadow: var(--shadow); }
@@ -97,6 +106,17 @@ textarea, input, select { width: 100%; font: 14px var(--font); color: var(--text
 textarea { font-family: ui-monospace, Consolas, monospace; resize: vertical; margin-bottom: 12px; }
 #summaryText { font-family: var(--font); line-height: 1.6; background: var(--card); }
 .hint { display: block; font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+/* "Rank by" label + dropdown: smaller label; custom arrow with room from the right edge */
+.inline-select { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; }
+.inline-select select {
+  appearance: none; -webkit-appearance: none; padding-right: 32px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235d6170' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 16px center; background-size: 12px 8px;
+}
+@media (prefers-color-scheme: dark) {
+  .inline-select select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23a2a7b5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+}
 
 .tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; margin-bottom: 16px; max-width: 100%; overflow-x: auto; }
 .tabs button { appearance: none; background: none; border: 0; padding: 8px 16px; font: 600 14px var(--font); color: var(--muted); cursor: pointer; white-space: nowrap; border-radius: 999px; min-height: 40px; }
